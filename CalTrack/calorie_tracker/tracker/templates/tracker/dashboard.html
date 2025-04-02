@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Daily Calorie Goal: {{ calorie_goal }} kcal</p>
+
+<h3>Food Entries</h3>
+<ul>
+    {% for entry in food_entries %}
+        <li>{{ entry.date }} - {{ entry.food_name }}: {{ entry.calories }} kcal</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'add_food' %}">Add Food</a>
+<a href="{% url 'set_goal' %}">Set Calorie Goal</a>
+
+<h3>Calorie Trend</h3>
+<canvas id="calorieChart"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('calorieChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ dates|safe }},
+            datasets: [{
+                label: 'Calories Consumed',
+                data: {{ calories|safe }},
+                borderColor: 'rgb(255, 99, 132)',
+                fill: false
+            }]
+        }
+    });
+</script>
+{% endblock %}
