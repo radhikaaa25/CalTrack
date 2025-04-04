@@ -1,35 +1,151 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h2>Dashboard</h2>
-<p>Daily Calorie Goal: {{ calorie_goal }} kcal</p>
+<div class="dashboard-container">
 
-<h3>Food Entries</h3>
-<ul>
-    {% for entry in food_entries %}
-        <li>{{ entry.date }} - {{ entry.food_name }}: {{ entry.calories }} kcal</li>
-    {% endfor %}
-</ul>
+    <h2 class="dashboard-title">🍽️ Your Daily Dashboard</h2>
 
-<a href="{% url 'add_food' %}">Add Food</a>
-<a href="{% url 'set_goal' %}">Set Calorie Goal</a>
+    <!-- Goal & Progress -->
+    <div class="goal-section">
+        <p><strong>Daily Calorie Goal:</strong> {{ calorie_goal }} kcal</p>
+        <div class="progress">
+            <div class="progress-bar bg-success"
+                role="progressbar"
+                style="width: {{ total_calories|floatformat:0 }}%;"
+                aria-valuenow="{{ total_calories }}"
+                aria-valuemin="0"
+                aria-valuemax="{{ calorie_goal }}">
+                {{ total_calories|floatformat:0 }} kcal
+            </div>
+        </div>
+    </div>
 
-<h3>Calorie Trend</h3>
-<canvas id="calorieChart"></canvas>
+    <!-- Food Entries -->
+    <div class="entries-section">
+        <h3>📝 Food Entries</h3>
+        {% if food_entries %}
+            <ul class="food-list">
+                {% for entry in food_entries %}
+                    <li>
+                        <strong>{{ entry.food.name }}</strong> ({{ entry.quantity }}x) -
+                        <span class="cal">{{ entry.total_calories }} kcal</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No food entries yet.</p>
+        {% endif %}
+    </div>
 
+    <!-- Buttons -->
+    <div class="actions">
+        <a href="{% url 'add_food' %}" class="btn btn-primary">➕ Add Food</a>
+        <a href="{% url 'set_goal' %}" class="btn btn-secondary">🎯 Set Calorie Goal</a>
+    </div>
+
+    <!-- Macronutrient Pie Chart -->
+    <div class="chart-section">
+        <h3>🧬 Macronutrient Breakdown</h3>
+        <canvas id="macroChart" width="250" height="250"></canvas>
+    </div>
+
+</div>
+
+<!-- Chart.js Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    var ctx = document.getElementById('calorieChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'line',
+    const ctx = document.getElementById('macroChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
         data: {
-            labels: {{ dates|safe }},
+            labels: Object.keys({{ macros|safe }}),
             datasets: [{
-                label: 'Calories Consumed',
-                data: {{ calories|safe }},
-                borderColor: 'rgb(255, 99, 132)',
-                fill: false
+                data: Object.values({{ macros|safe }}),
+                backgroundColor: ['#4e79a7', '#f28e2b', '#59a14f'],
             }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
         }
     });
 </script>
+
+<style>
+    .dashboard-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background: #191f4e;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .goal-section p {
+        font-size: 1.1rem;
+    }
+
+    .progress {
+        height: 25px;
+        margin-bottom: 20px;
+    }
+
+    .entries-section {
+        margin-top: 30px;
+    }
+
+    .food-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .food-list li {
+        padding: 6px 10px;
+        margin: 4px 0;
+        background: #fff;
+        border-left: 5px solid #4e79a7;
+        border-radius: 4px;
+    }
+
+    .cal {
+        float: right;
+        color: #444;
+    }
+
+    .actions {
+        margin: 25px 0;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        color: white;
+    }
+
+    .btn-primary {
+        background-color: #244a75;
+    }
+
+    .btn-secondary {
+        background-color: #39812e;
+    }
+
+    .chart-section {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    canvas#macroChart {
+        margin-top: 10px;
+    }
+</style>
 {% endblock %}

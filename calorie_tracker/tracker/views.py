@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import FoodEntry, UserProfile
+from .models import FoodEntry, UserProfile, FoodDatabase
 from .forms import FoodEntryForm, UserProfileForm
 import json
 
@@ -9,43 +9,44 @@ def dashboard(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
     food_entries = FoodEntry.objects.filter(user=request.user).order_by('-date')
 
-    # Preparing data for the graph
-    daily_calories = {}
-    for entry in food_entries:
-        daily_calories[entry.date] = daily_calories.get(entry.date, 0) + entry.calories
+    total_calories = sum(entry.total_calories() for entry in food_entries)
+    total_carbs = sum(entry.total_carbs() for entry in food_entries)
+    total_fats = sum(entry.total_fats() for entry in food_entries)
+    total_proteins = sum(entry.total_proteins() for entry in food_entries)
 
-    dates = list(daily_calories.keys())
-    calories = list(daily_calories.values())
+    macros = {
+        "Carbs": total_carbs,
+        "Fats": total_fats,
+        "Proteins": total_proteins
+    }
 
     context = {
         'food_entries': food_entries,
         'calorie_goal': user_profile.daily_calorie_goal,
-        'dates': json.dumps(dates, default=str),
-        'calories': json.dumps(calories),
+        'total_calories': total_calories,
+        'macros': json.dumps(macros),
     }
     return render(request, 'tracker/dashboard.html', context)
 
-@login_required
 def add_food(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = FoodEntryForm(request.POST)
+        # if form.is_valid():
+        #     form.save()
+        #     return redirect("add_food")
         if form.is_valid():
             food_entry = form.save(commit=False)
             food_entry.user = request.user
             food_entry.save()
-            return redirect('dashboard')
+            return redirect("add_food")
     else:
         form = FoodEntryForm()
-    return render(request, 'tracker/add_food.html', {'form': form})
 
-@login_required
+    foods = FoodDatabase.objects.all()
+
+    print("DEBUG: Foods retrieved from DB ->", foods)  # Debugging output in console
+
+    return render(request, "tracker/add_food.html", {"form": form, "foods": foods})
+
 def set_goal(request):
-    user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user_profile)
-        if form.is_valid():
-            form.save()
-            return redirect('dashboard')
-    else:
-        form = UserProfileForm(instance=user_profile)
-    return render(request, 'tracker/set_goal.html', {'form': form})
+    return render(request, 'tracker/set_goal.html')
