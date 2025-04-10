@@ -24,9 +24,17 @@ A stylish, dark-themed web app built with **Django** that lets users track their
 ---
 
 ## 📸 Screenshots
+### 🔐 Login Page
+![Login Page](screenshots/login.png)
 
-> _Coming soon_ (add images of your UI if you have them!)
+### 📈 Dashboard - Index 1
+![Index 1](screenshots/index1.png)
 
+### 📊 Dashboard - Index 2
+![Index 2](screenshots/index2.png)
+
+### 🗑️ Delete Entry
+![Delete Entry](screenshots/delete.png)
 ---
 
 ## 🚀 Getting Started
