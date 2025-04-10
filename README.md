@@ -1,9 +1,62 @@
-# django-calorie-tracker
-The intention here is to create a web app using Djnago that tracks calories intake and track the calories consumptions.
+# 🥗 Calorie Tracker
 
-# SKILL SET REQUIRED:
- Django, Python, BootStrap, HTML, Javascript, CSS
+A stylish, dark-themed web app built with **Django** that lets users track their calorie intake. Log meals, monitor daily totals, and visualize your data using Chart.js — all wrapped in a modern, aesthetic UI.
 
+---
 
-# RESULT:
-![image](https://user-images.githubusercontent.com/46977634/92306334-36119700-ef86-11ea-83ac-ef08373529ff.png)
+## 🌟 Features
+
+- 🔐 User authentication (Sign Up / Login / Logout)
+- 📝 Add, view, and delete food items
+- 📊 Visual calorie data with Chart.js
+- 🎨 Fully themed with Bootstrap 5 & custom CSS
+- 🌈 Responsive and mobile-friendly design
+
+---
+
+## 🛠️ Tech Stack
+
+- **Backend:** Django 4.x
+- **Frontend:** Bootstrap 5, Chart.js, Custom CSS
+- **Database:** SQLite (default with Django)
+- **Templating:** Django Template Language (DTL)
+
+---
+
+## 📸 Screenshots
+
+> _Coming soon_ (add images of your UI if you have them!)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/calorie-tracker.git
+cd calorie-tracker
+```
+
+### 2. Create and activate a virtual environment
+
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Apply migrations
+```bash
+python manage.py migrate
+```
+### 5. Run the development server
+```bash
+python manage.py runserver
+```
+### 6. Access the app
+Open your browser and go to: http://127.0.0.1:8000/
