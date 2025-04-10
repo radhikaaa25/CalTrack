@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CalTrack</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Raleway:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Dark Theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/darkly/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+  <style>
+    body {
+      {#background-color: #121212;#}
+        background: linear-gradient(rgb(80, 46, 46), rgba(18, 18, 18, 0.3)),
+        url("{% static 'images/auth-bg.jpg' %}") no-repeat center center fixed;
+        background-size: cover;
+        color: #f8f9fa;
+        font-family: 'Lato', sans-serif;
+    }
+    .navbar-brand {
+        font-family: 'Papyrus', serif;
+        font-size: 45px;
+        letter-spacing: 5px;
+        color: #9d223f;
+        background: linear-gradient(135deg, #ffe0c3, #fab397);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 1px 1px 8px rgba(255, 223, 186, 0.3);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .navbar-brand:hover {
+      transform: scale(1.03);
+    }
+
+
+    h3, h4, h5,  .form-label {
+      font-family: 'Poppins', serif;
+      color: #f2e9e4;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-size: 20px;
+    }
+
+    .navbar {
+      background-color: #1c1c1c !important;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      border-radius: 12px;
+    }
+
+    .navbar-brand {
+      font-size: 2rem;
+    }
+
+    .card {
+      background-color: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      border: none;
+    }
+
+    .btn {
+      border-radius: 10px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .btn-success{
+        background-color: rgb(131, 88, 88);
+    }
+    .btn-success:hover {
+      background-color: #63dc96;
+      transform: scale(1.03);
+    }
+
+    .btn-outline-light:hover {
+      background-color: #ffffff;
+      color: #121212;
+    }
+
+    .btn-outline-danger:hover {
+      background-color: #ff6b6b;
+      color: white;
+    }
+
+    select.form-select option {
+      background-color: #1f1f1f;
+      color: #ffffff;
+    }
+
+    .table th, .table td {
+      background-color: #1f1f1f !important;
+      border: none;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      vertical-align: middle;
+    }
+
+    .progress {
+      height: 30px;
+      background-color: #2a2a2a;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+    }
+
+    .progress-bar {
+      background-color: #28a745;
+      transition: width 0.6s ease;
+    }
+
+    canvas#myChart {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-4">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg mb-4 px-3">
+      <div class="container-fluid">
+        <span class="navbar-brand"><b>CalTrack</b></span>
+        <div>
+          <a href="{% url 'index' %}" class="btn btn-outline-light me-2">Home</a>
+          <a href="{% url 'logout' %}" class="btn btn-outline-danger">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Welcome -->
+    <div class="mb-4">
+      <h5>Welcome, <strong>{{ request.user.username }}</strong></h5>
+    </div>
+
+    <!-- Food Add Form -->
+    <div class="card p-4 mb-4">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="row g-3 align-items-center">
+          <div class="col-md-3">
+            <label class="form-label"><strong>Select Food to Add:</strong></label>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select" name="food_consumed" id="food_consumed">
+              {% for food in foods %}
+                <option value="{{ food.name }}">{{ food.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3 text-end">
+            <button class="btn btn-success" type="submit">➕ ADD </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Calorie Goal Progress -->
+    <h4 class="text-center mb-3">🎯 CALORIE GOAL </h4>
+    <div class="progress mx-auto mb-5" style="max-width: 80%;">
+      <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+
+    <!-- Table & Chart -->
+    <div class="row">
+      <!-- Table -->
+      <div class="col-md-7 mb-4">
+        <div class="card p-3">
+          <h5 class="text-center mb-3">🍽️ TODAY'S CONSUMPTION </h5>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Food item</th>
+                <th>Carbs (gm)</th>
+                <th>Protein (gm)</th>
+                <th>Fats (gm)</th>
+                <th>Calories (Kcal)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in consumed_food %}
+              <tr>
+                <td>{{ c.food_consumed.name }}</td>
+                <td>{{ c.food_consumed.carbs }}</td>
+                <td>{{ c.food_consumed.protein }}</td>
+                <td>{{ c.food_consumed.fats }}</td>
+                <td>{{ c.food_consumed.calories }}</td>
+                <td><a href="{% url 'delete' c.pk %}" class="btn btn-danger btn-sm">X</a></td>
+              </tr>
+              {% endfor %}
+              <tr class="table-active">
+                <td><strong>Total</strong></td>
+                <td id="totalCarbs"></td>
+                <td id="totalProtien"></td>
+                <td id="totalFats"></td>
+                <td id="totalCalories"></td>
+                <td>–</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="col-md-5 mb-4">
+        <div class="card p-3">
+          <h5 class="text-center">📊 NUTRIENTS BREAKDOWN </h5>
+          <canvas id="myChart" width="400" height="400"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Logic -->
+  <script>
+    let carbs = 0, protein = 0, fats = 0, calories = 0;
+    const rows = document.querySelectorAll("table tbody tr");
+
+    for (let i = 0; i < rows.length - 1; i++) {
+      carbs += parseFloat(rows[i].cells[1].innerHTML);
+      protein += parseFloat(rows[i].cells[2].innerHTML);
+      fats += parseFloat(rows[i].cells[3].innerHTML);
+      calories += parseFloat(rows[i].cells[4].innerHTML);
+    }
+
+    carbs = Math.round(carbs);
+    protein = Math.round(protein);
+    fats = Math.round(fats);
+    calories = Math.round(calories);
+
+    document.getElementById("totalCarbs").innerHTML = carbs + ' gm';
+    document.getElementById("totalProtien").innerHTML = protein + ' gm';
+    document.getElementById("totalFats").innerHTML = fats + ' gm';
+    document.getElementById("totalCalories").innerHTML = calories + ' kcal';
+
+    const calPer = (calories / 2000) * 100;
+    document.querySelector(".progress-bar").style.width = calPer + "%";
+
+    const total = carbs + protein + fats;
+    const ctx = document.getElementById('myChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Carbs ' + Math.round((carbs / total) * 100) + '%',
+          'Protein ' + Math.round((protein / total) * 100) + '%',
+          'Fats ' + Math.round((fats / total) * 100) + '%'
+        ],
+        datasets: [{
+          data: [carbs, protein, fats],
+          backgroundColor: ['#f94144', '#577590', '#f9c74f'],
+          borderColor: '#121212'
+        }]
+      },
+      options: {
+        legend: {
+          labels: {
+            fontColor: '#fff',
+            fontFamily: 'Lato'
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
